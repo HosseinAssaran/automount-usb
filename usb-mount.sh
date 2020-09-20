@@ -29,10 +29,17 @@ DEVICE="/dev/${DEVBASE}"
 # See if this drive is already mounted, and if so where
 MOUNT_POINT=$(mount | grep ${DEVICE} | awk '{ print $3 }')
 
+# identify how many devices with this device name prefix
+PARTITIONS=$(ls ${DEVICE}* -l | wc -l)
+
 DEV_LABEL=""
 
 do_mount()
 {
+    if [ ${PARTITIONS} -ne 1 ]; then
+        echo "Warning: ${DEVICE} is disk not partition"
+        exit 1
+    fi
     if [[ -n ${MOUNT_POINT} ]]; then
         ${log} "Warning: ${DEVICE} is already mounted at ${MOUNT_POINT}"
         exit 1
@@ -82,6 +89,10 @@ do_mount()
 
 do_unmount()
 {
+    if [ ${PARTITIONS} -ne 1 ]; then
+        echo "Warning: ${DEVICE} is disk not partition"
+        exit 1
+    fi
     if [[ -z ${MOUNT_POINT} ]]; then
         ${log} "Warning: ${DEVICE} is not mounted"
     else
